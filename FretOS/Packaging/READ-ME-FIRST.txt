@@ -1,0 +1,35 @@
+FretOS - play Clone Hero on a Mac with a wired Xbox 360 guitar
+
+HOW TO SET IT UP (about 2 minutes, only once)
+
+1. Drag FretOS into your Applications folder.
+
+2. Double-click FretOS to open it.
+   macOS will say it "could not verify" FretOS. That's normal for free apps
+   that aren't registered with Apple. To open it anyway:
+
+   macOS 15 (Sequoia) or newer:
+     - Click "Done".
+     - Open System Settings > Privacy & Security.
+     - Scroll down. Next to "FretOS was blocked", click "Open Anyway".
+     - Enter your Mac password, then click "Open Anyway" again.
+
+   macOS 13 or 14:
+     - Right-click (or Control-click) FretOS and choose "Open".
+     - Click "Open".
+
+3. Plug your guitar into a USB port.
+
+4. FretOS asks to press keys for you. Click the yellow button
+   (it says OPEN SETTINGS or ALLOW).
+   System Settings opens to Privacy & Security > Accessibility.
+   Turn on the switch next to FretOS. Enter your password if asked.
+   Go back to FretOS and click REOPEN.
+
+5. Press the green fret. If the green box lights up, you're done.
+   Open Clone Hero and play.
+
+FretOS uses Clone Hero's default keyboard keys, so you don't need to
+change anything in Clone Hero.
+
+Help and updates: see the GitHub page you downloaded this from.

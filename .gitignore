@@ -1,0 +1,13 @@
+.DS_Store
+.venv/
+.build/
+.swiftpm/
+dist/
+*.log
+FretOS/Vendor/
+.superpowers/
+docs/superpowers/
+xplorer.py
+icon transparent BG.png
+Retro X-Plorer Guitar Icon.png
+CONTEXT.md
