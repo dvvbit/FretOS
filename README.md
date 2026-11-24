@@ -24,7 +24,7 @@
 
 ### Step 1. Download
 
-Go to the **[download page](../../releases/latest)**. Under **Assets**, click **`FretOS-1.1.0.zip`** (the version number may be newer).
+Go to the **[download page](../../releases/latest)**. Under **Assets**, click **`FretOS-1.1.1.zip`** (the version number may be newer).
 
 ### Step 2. Unzip and move to Applications
 
@@ -142,7 +142,7 @@ Requires Xcode 15 or newer.
 ```
 scripts/build-libusb.sh             # once: builds libusb
 swift test --package-path FretOS
-scripts/make-app.sh 1.1.0           # makes dist/FretOS.app and dist/FretOS-1.1.0.zip
+scripts/make-app.sh 1.1.1           # makes dist/FretOS.app and dist/FretOS-1.1.1.zip
 ```
 
 ## License

@@ -29,6 +29,14 @@ cp "$ROOT/LICENSE" "$ROOT/THIRD_PARTY_LICENSES.md" "$APP/Contents/Resources/Lice
 cp "$PKG/Vendor/libusb/COPYING" "$APP/Contents/Resources/Licenses/libusb-COPYING.txt"
 cp "$PKG/Sources/FretOS/Resources/OFL.txt" "$APP/Contents/Resources/Licenses/PressStart2P-OFL.txt"
 
+echo "→ stripping build paths and debug info"
+strip -S -x "$APP/Contents/MacOS/FretOS"
+strip -S -x "$APP/Contents/Frameworks/libusb-1.0.0.dylib"
+# Refuse to ship anything that still contains a home-folder path.
+if LC_ALL=C grep -rlaE "/Users/[^/]+/" "$APP" >/dev/null; then
+  echo "✗ build path found in app:"; LC_ALL=C grep -rlaE "/Users/[^/]+/" "$APP"; exit 1
+fi
+
 echo "→ signing (ad-hoc)"
 codesign --force -s - "$APP/Contents/Frameworks/libusb-1.0.0.dylib"
 codesign --force -s - --identifier io.github.fretos.FretOS "$APP"
