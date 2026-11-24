@@ -37,9 +37,20 @@ if LC_ALL=C grep -rlaE "/Users/[^/]+/" "$APP" >/dev/null; then
   echo "✗ build path found in app:"; LC_ALL=C grep -rlaE "/Users/[^/]+/" "$APP"; exit 1
 fi
 
-echo "→ signing (ad-hoc)"
-codesign --force -s - "$APP/Contents/Frameworks/libusb-1.0.0.dylib"
-codesign --force -s - --identifier io.github.fretos.FretOS "$APP"
+# Same certificate every release → macOS keeps the Accessibility permission across updates.
+# Without one (e.g. someone building from source) fall back to ad-hoc signing.
+SIGN_DIR="$HOME/.fretos-signing"
+if [ -f "$SIGN_DIR/identity" ]; then
+  echo "→ signing (FretOS certificate)"
+  KC="$SIGN_DIR/signing.keychain-db"
+  security unlock-keychain -p "$(cat "$SIGN_DIR/password")" "$KC"
+  SIGN=(--keychain "$KC" -s "$(cat "$SIGN_DIR/identity")")
+else
+  echo "→ signing (ad-hoc; run scripts/make-signing-identity.sh once for stable signing)"
+  SIGN=(-s -)
+fi
+codesign --force "${SIGN[@]}" "$APP/Contents/Frameworks/libusb-1.0.0.dylib"
+codesign --force "${SIGN[@]}" --identifier io.github.fretos.FretOS "$APP"
 
 echo "→ zipping"
 ZIP="$DIST/FretOS-$VERSION.zip"

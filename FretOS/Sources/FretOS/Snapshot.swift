@@ -18,6 +18,10 @@ enum Snapshot {
         engine.previewLive(LiveState(), status: .noGuitar, seen: [])
         render(MainView().environmentObject(engine), "main-noguitar", dir)
         render(OnboardingView().environmentObject(engine), "onboarding", dir)
+        engine.previewLive(LiveState(), status: .ready, seen: [])
+        engine.previewUpdate("v1.2.1")
+        render(MainView().environmentObject(engine), "main-update", dir)
+        engine.previewUpdate(nil)
     }
 
     private static func render<V: View>(_ view: V, _ name: String, _ dir: String) {

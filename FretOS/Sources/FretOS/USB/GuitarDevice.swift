@@ -14,6 +14,13 @@ final class GuitarDevice: @unchecked Sendable {
 
     private var thread: Thread?
     private let stopFlag = ManagedAtomicBool()
+    private let infoLock = NSLock()
+    private var _connectedName: String?
+    /// e.g. "Guitar Hero X-plorer (1430:4748)" while a guitar is open, for problem reports.
+    var connectedName: String? {
+        infoLock.lock(); defer { infoLock.unlock() }; return _connectedName
+    }
+    private func setConnectedName(_ n: String?) { infoLock.lock(); _connectedName = n; infoLock.unlock() }
 
     func start() {
         guard thread == nil else { return }
@@ -39,10 +46,12 @@ final class GuitarDevice: @unchecked Sendable {
                 Thread.sleep(forTimeInterval: 1)
                 continue
             }
+            setConnectedName(describe(handle))
             onConnectionChange?(true)
             readLoop(handle, epIn)
             libusb_release_interface(handle, 0)
             libusb_close(handle)
+            setConnectedName(nil)
             onConnectionChange?(false)
         }
     }
@@ -83,6 +92,18 @@ final class GuitarDevice: @unchecked Sendable {
             return (handle, epIn)
         }
         return nil
+    }
+
+    /// Product name (if the guitar reports one) plus vendor:product ID.
+    private func describe(_ handle: OpaquePointer) -> String {
+        var desc = libusb_device_descriptor()
+        guard libusb_get_device_descriptor(libusb_get_device(handle), &desc) == 0 else { return "unknown" }
+        let ids = String(format: "%04x:%04x", desc.idVendor, desc.idProduct)
+        var buf = [UInt8](repeating: 0, count: 128)
+        let n = desc.iProduct == 0 ? 0 : libusb_get_string_descriptor_ascii(handle, desc.iProduct, &buf, Int32(buf.count))
+        guard n > 0 else { return ids }
+        let name = String(decoding: buf.prefix(Int(n)), as: UTF8.self).trimmingCharacters(in: .whitespaces)
+        return name.isEmpty ? ids : "\(name) (\(ids))"
     }
 
     /// The X-plorer by ID, or any wired Xbox 360 device whose interface 0 says it's a guitar.

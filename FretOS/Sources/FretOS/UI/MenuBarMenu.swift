@@ -12,6 +12,11 @@ struct MenuBarMenu: View {
             openWindow(id: "main")
             NSApp.activate(ignoringOtherApps: true)
         }
+        if engine.updateAvailable != nil {
+            Button("Download Update…") { engine.downloadUpdate() }
+        }
+        Button("Report a Problem…") { engine.reportProblem() }
+        Divider()
         Button("Quit FretOS") { NSApp.terminate(nil) }.keyboardShortcut("q")
     }
 }

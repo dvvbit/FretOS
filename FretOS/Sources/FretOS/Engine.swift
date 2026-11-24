@@ -21,12 +21,16 @@ final class Engine: ObservableObject {
     /// The user clicked ALLOW this session: next step is to reopen FretOS.
     @Published private(set) var askedForPermission = false
     @Published var capturing: GuitarInput? { didSet { refreshGate() } }
+    /// Newer version tag on GitHub (e.g. "v1.2.1"), if one is out and not skipped.
+    @Published private(set) var updateAvailable: String?
     @Published var settings: Settings {
         didSet {
             store.settings = settings
             let s = settings
             core.withProcessor { $0.bindings = s.bindings; $0.tuning = s.tuning }
             if oldValue.launchAtLogin != s.launchAtLogin { LaunchAtLogin.set(s.launchAtLogin) }
+            if !s.checkForUpdates { updateAvailable = nil }
+            if s.checkForUpdates && !oldValue.checkForUpdates { checkForUpdates(force: true) }
             refreshGate()
         }
     }
@@ -73,6 +77,10 @@ final class Engine: ObservableObject {
             forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
         ) { [weak self] _ in MainActor.assumeIsolated { self?.refreshGate() } }
         poll()
+        checkForUpdates()
+        Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.checkForUpdates() }
+        }
     }
 
     // MARK: - Actions
@@ -89,6 +97,56 @@ final class Engine: ObservableObject {
     func resetToDefaults() { settings.bindings = Preset.cloneHeroDefault.bindings }
     func recalibrate() { core.withProcessor { $0.recalibrate() } }
     func setTuning(_ change: (inout Tuning) -> Void) { change(&settings.tuning) }
+
+    // MARK: - Updates & problem reports
+
+    static var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
+    }
+
+    /// At most once a day, asks GitHub for the latest release tag. Sends nothing about the user.
+    func checkForUpdates(force: Bool = false) {
+        guard settings.checkForUpdates,
+              force || UpdateCheck.isDue(lastCheck: settings.lastUpdateCheck, now: Date()) else { return }
+        settings.lastUpdateCheck = Date()
+        var req = URLRequest(url: UpdateCheck.apiURL, timeoutInterval: 15)
+        req.setValue("FretOS", forHTTPHeaderField: "User-Agent")
+        req.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        URLSession.shared.dataTask(with: req) { data, _, _ in
+            guard let data, let tag = UpdateCheck.latestTag(fromReleaseJSON: data) else { return }
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated { Engine.shared.offerUpdate(tag) }
+            }
+        }.resume()
+    }
+
+    private func offerUpdate(_ tag: String) {
+        guard settings.checkForUpdates, tag != settings.skippedVersion,
+              AppVersion.isNewer(tag, than: Self.appVersion) else { return }
+        updateAvailable = tag
+    }
+
+    func downloadUpdate() { NSWorkspace.shared.open(UpdateCheck.downloadPage) }
+
+    func skipUpdate() {
+        settings.skippedVersion = updateAvailable
+        updateAvailable = nil
+    }
+
+    func reportProblem() {
+        let v = ProcessInfo.processInfo.operatingSystemVersion
+        #if arch(arm64)
+        let arch = "Apple Silicon"
+        #else
+        let arch = "Intel"
+        #endif
+        NSWorkspace.shared.open(ProblemReport.url(
+            appVersion: Self.appVersion, macOS: "\(v.majorVersion).\(v.minorVersion).\(v.patchVersion)",
+            arch: arch, guitar: device.connectedName, status: status.text))
+    }
+
+    /// Snapshot/preview only.
+    func previewUpdate(_ tag: String?) { updateAvailable = tag }
 
     /// Snapshot/preview only: show a fixed state without a guitar.
     func previewLive(_ l: LiveState, status s: EngineStatus, seen: Set<GuitarInput>) {

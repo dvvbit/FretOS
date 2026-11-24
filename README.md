@@ -24,7 +24,7 @@
 
 ### Step 1. Download
 
-Go to the **[download page](../../releases/latest)**. Under **Assets**, click **`FretOS-1.1.1.zip`** (the version number may be newer).
+Go to the **[download page](../../releases/latest)**. Under **Assets**, click **`FretOS-1.2.0.zip`** (the version number may be newer).
 
 ### Step 2. Unzip and move to Applications
 
@@ -72,7 +72,7 @@ Open Clone Hero and play. The light at the top of FretOS turns green and says **
 
 <p align="center"><img src="docs/step-3-playing.png" width="320" alt="FretOS playing"></p>
 
-Next time, just open FretOS, plug in your guitar and play. To have it start by itself, turn on **Advanced > Open FretOS when I log in**.
+Next time, just open FretOS, plug in your guitar and play. When a new version comes out, FretOS shows an **UPDATE AVAILABLE** banner. Click **DOWNLOAD** and replace the old FretOS in Applications. To have it start by itself, turn on **Advanced > Open FretOS when I log in**.
 
 ---
 
@@ -92,7 +92,7 @@ FretOS uses Clone Hero's default keyboard keys:
 
 **Tilt and whammy:** the sliders set how far you have to tilt or push. Slide left if it goes off by accident.
 
-**Advanced:** strum debounce, recalibrate, whammy depth (experimental), extra buttons (Xbox button, D-pad and more), and open at login.
+**Advanced:** strum debounce, recalibrate, whammy depth (experimental), extra buttons (Xbox button, D-pad and more), open at login, update alerts and report a problem.
 
 ## Supported guitars
 
@@ -108,7 +108,7 @@ PS3, PS4 and Wii (with adapter) guitars usually show up as normal game controlle
 |---|---|
 | "Could not verify FretOS" and no way to open it | Follow [Step 3](#step-3-open-fretos). On macOS 15 or newer, the **Open Anyway** button is in **System Settings > Privacy & Security**. |
 | **ALLOW KEYSTROKES** won't go away | Open **System Settings > Privacy & Security > Accessibility**. Click FretOS, click **–** to remove it, then click the yellow button in FretOS again and turn it back on. |
-| Worked before, stopped after updating FretOS | Same fix as above. macOS forgets the permission when the app is updated. |
+| Stopped working after updating from 1.1 or older | Same fix as above. From 1.2.0 on, updates keep the permission. |
 | **PLUG IN YOUR GUITAR** but it's plugged in | Unplug it and plug it back in. Try a different USB port or adapter. Close any other app that might be using the guitar. |
 | **PAUSED** | Click on the Clone Hero window. FretOS only sends keys to Clone Hero, so a stray strum can't type into other apps. You can turn this off in **Advanced**. |
 | FretOS works but Clone Hero doesn't react | Make sure Clone Hero is using its default keyboard controls, or change the keys in FretOS to match yours. |
@@ -116,7 +116,7 @@ PS3, PS4 and Wii (with adapter) guitars usually show up as normal game controlle
 | Star power goes off by itself | Hold the guitar level and click **Advanced > Recalibrate**, or slide **Tilt** to the left. |
 | Whammy is only on or off | macOS doesn't let free apps make real analog controllers. Try **Advanced > Whammy depth (experimental)**. |
 
-Still stuck? [Open an issue](../../issues) and say what your Mac, macOS version and guitar are.
+Still stuck? In FretOS, click **Advanced > Report a problem**. It opens a GitHub form with your FretOS version, macOS version and guitar already filled in. Nothing is sent until you click submit. (You need a free GitHub account.)
 
 ## Questions
 
@@ -130,7 +130,7 @@ No. It's no longer updated and doesn't load on M1 and newer Macs. FretOS doesn't
 No, FretOS is only for guitars.
 
 **Is it safe?**
-FretOS doesn't use the internet and doesn't collect anything. It only reads the guitar and presses keys. All the code is on this page.
+FretOS doesn't collect anything. It only reads the guitar and presses keys. The only time it goes online is a once-a-day check of this page for a newer version, and you can turn that off in **Advanced**. All the code is on this page.
 
 **How do I uninstall it?**
 Quit FretOS from the guitar icon in the menu bar, then drag it from Applications to the Trash.
@@ -141,8 +141,9 @@ Requires Xcode 15 or newer.
 
 ```
 scripts/build-libusb.sh             # once: builds libusb
+scripts/make-signing-identity.sh    # optional, once: free certificate so updates keep permission
 swift test --package-path FretOS
-scripts/make-app.sh 1.1.1           # makes dist/FretOS.app and dist/FretOS-1.1.1.zip
+scripts/make-app.sh 1.2.0           # makes dist/FretOS.app and dist/FretOS-1.2.0.zip
 ```
 
 ## License

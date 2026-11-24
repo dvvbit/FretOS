@@ -40,6 +40,10 @@ public struct Settings: Codable, Equatable, Sendable {
     public var onlyWhenCloneHeroFront = true
     public var launchAtLogin = false
     public var onboarded = false
+    public var checkForUpdates = true
+    /// The user clicked "skip" on this update; don't show it again.
+    public var skippedVersion: String?
+    public var lastUpdateCheck: Date?
     public init() {}
 
     // Tolerant decoding: a missing or unreadable field falls back to its default instead
@@ -52,6 +56,9 @@ public struct Settings: Codable, Equatable, Sendable {
         onlyWhenCloneHeroFront = (try? c.decodeIfPresent(Bool.self, forKey: .onlyWhenCloneHeroFront)) ?? nil ?? d.onlyWhenCloneHeroFront
         launchAtLogin = (try? c.decodeIfPresent(Bool.self, forKey: .launchAtLogin)) ?? nil ?? d.launchAtLogin
         onboarded = (try? c.decodeIfPresent(Bool.self, forKey: .onboarded)) ?? nil ?? d.onboarded
+        checkForUpdates = (try? c.decodeIfPresent(Bool.self, forKey: .checkForUpdates)) ?? nil ?? d.checkForUpdates
+        skippedVersion = (try? c.decodeIfPresent(String.self, forKey: .skippedVersion)) ?? nil
+        lastUpdateCheck = (try? c.decodeIfPresent(Date.self, forKey: .lastUpdateCheck)) ?? nil
     }
 
     public var presetName: String {

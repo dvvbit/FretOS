@@ -14,6 +14,7 @@ struct MainView: View {
             StatusBar()
             if engine.status == .needsPermission { PermissionBanner() }
             if engine.status == .noGuitar { GuitarBanner() }
+            if let tag = engine.updateAvailable { UpdateBanner(tag: tag) }
             Panel(title: "FRETS") { FretRow() }
             Panel(title: "CONTROLS") { ControlsGrid() }
             Panel(title: "TILT & WHAMMY") {
@@ -144,6 +145,22 @@ private struct GuitarBanner: View {
             Text("Already plugged in? Unplug it, wait a second, plug it back in. Quit any other app using it.")
                 .font(Theme.body(11)).foregroundStyle(Theme.dim)
         } action: { EmptyView() }
+    }
+}
+
+private struct UpdateBanner: View {
+    let tag: String
+    @EnvironmentObject var engine: Engine
+    var body: some View {
+        Banner(step: "UPDATE AVAILABLE") {
+            Text("FretOS \(tag.hasPrefix("v") ? String(tag.dropFirst()) : tag) is out.")
+                .font(Theme.body(13)).foregroundStyle(Theme.text)
+            Text("Download it, unzip it, and drag the new FretOS into Applications (replace the old one).")
+                .font(Theme.body(11)).foregroundStyle(Theme.dim)
+        } action: {
+            PixelButton(title: "DOWNLOAD", tint: Theme.amber) { engine.downloadUpdate() }
+            PixelButton(title: "SKIP") { engine.skipUpdate() }
+        }
     }
 }
 
@@ -364,6 +381,12 @@ struct AdvancedPanel: View {
                 }
                 Row("Open FretOS when I log in", nil) {
                     PixelToggle(isOn: $engine.settings.launchAtLogin)
+                }
+                Row("Tell me when there's an update", "Checks GitHub once a day. Nothing about you is sent.") {
+                    PixelToggle(isOn: $engine.settings.checkForUpdates)
+                }
+                Row("Report a problem", "Opens a GitHub form with your FretOS, macOS and guitar info filled in. Nothing is sent until you submit it.") {
+                    PixelButton(title: "REPORT") { engine.reportProblem() }
                 }
             }
             Panel(title: "EXTRA BUTTONS") {
